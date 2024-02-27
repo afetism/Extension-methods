@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Lesson10
@@ -148,35 +149,99 @@ namespace Lesson10
 
             //9)borclulardan en coxu hansi ilde dogulubsa hemin ili cixartmaq
 
+            var result9 = debtors.GroupBy(d => d.BirthDay.Year)
+                .OrderByDescending(d => d.Count())
+                .First().Key;
+
 
 
 
             //10)Borcu en boyuk olan 5 borclunun siyahisini cixartmaq
 
+            var result10 = debtors.OrderByDescending(d => d.Debt)
+                    .Take(5)
+                    .ToList();
+               ;
+
+
 
             //11)Butun borcu olanlarin borcunu cemleyib umumi borcu cixartmaq
+
+            var result11 = debtors.Sum(d => d.Debt);
+
 
 
             //12)2ci dunya muharibesin gormush borclularin siyahisi cixartmaq
 
+            var result12 = debtors.Where(d => d.BirthDay.Year<=1945)
+               .Select(d => d.BirthDay.Year);
+
+             foreach ( var d in result12)
+                Console.WriteLine(d);
 
             //13)Nomresinde tekrar reqemler olmayan borclularin ve onlarin borcunun meblegin cixartmaq
 
 
+
+            bool isDublicat(Debtor db)
+            {
+                List<int> distictDebt = new List<int>();
+                var debt = db.Debt;
+                while(debt!=0)
+                {
+                    if (!distictDebt.Contains(debt%10))
+                    {
+                        distictDebt.Add(debt%10);
+                        debt/=10;
+                    }
+                    else
+                        return false;
+                    
+                }
+                return true;
+            }
+
+             var result13 = debtors.Where(d=> isDublicat(d))
+                .Select(d => d.Debt);
+             
+
+
+
             //14)Tesevvur edek ki,butun borclari olanlar bugunden etibaren her ay 500 azn pul odeyecekler.Oz ad gunune kimi borcun oduyub qurtara bilenlerin siyahisin cixartmaq
 
+            static bool payDept(Debtor debtors)
+            {
+                int odenilmis = 0;
+                DateTime dt = DateTime.Now;
+                while (dt.Month != debtors.BirthDay.Month)
+                {
+                    if (odenilmis <  debtors.Debt)
+                        odenilmis += 500;
+                    else
+                        return true;
+                    dt.AddMonths(1);
+                }
+                if (odenilmis >= debtors.Debt)
+                    return true;
+                else return false;
+
+            }
+
+            var result14 = debtors.Where(d => payDept(d))
+                .Select(d => d.FullName + " " + d.Debt);
+
+
+           
 
             //15)Adindaki ve familyasindaki herflerden "smile" sozunu yaza bileceyimiz borclularin siyahisini cixartmaq
+
             string st = "smile";
-            var result = debtors.Where(d => st.All(c=>d.FullName.ToLower().Contains(c)))
+            var result15 = debtors.Where(d => st.All(c=>d.FullName.ToLower().Contains(c)))
                 .Select(d => d.FullName);  
             
 
 
-            foreach ( var d in result )
-            {
-                Console.WriteLine(d);
-            }
+           
         }
     }
 }
